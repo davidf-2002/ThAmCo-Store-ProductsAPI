@@ -4,12 +4,22 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+// Configure DbContext using the connection string
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<ProductContext>(options =>
+    options.UseSqlServer(connectionString));
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
+}
 
 
 if (builder.Environment.IsDevelopment())
