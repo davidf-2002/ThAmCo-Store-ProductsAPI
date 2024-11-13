@@ -8,8 +8,6 @@ using ProductsAPI.Data;
 using ProductsAPI.Models;
 using ProductsAPI.Repository;
 
-
-
 namespace ThAmCo.ProductsAPI.Test
 {
     [TestClass]
