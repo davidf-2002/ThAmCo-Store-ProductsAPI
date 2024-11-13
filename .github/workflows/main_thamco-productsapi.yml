@@ -39,6 +39,7 @@ jobs:
           path: ./test-results
         if: ${{ always() }} 
 
+        
 
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
