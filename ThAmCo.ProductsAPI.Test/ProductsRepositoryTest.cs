@@ -13,9 +13,9 @@ namespace ThAmCo.ProductsAPI.Test
     [TestClass]
     public class ProductRepositoryTests
     {
-        private Mock<ProductContext> _mockContext;
-        private Mock<DbSet<Product>> _mockSet;
-        private ProductRepository _repository;
+        private Mock<ProductContext> _mockContext = null!;
+        private Mock<DbSet<Product>> _mockSet = null!;
+        private ProductRepository _repository = null!;
 
         [TestInitialize]
         public void Initialize()
