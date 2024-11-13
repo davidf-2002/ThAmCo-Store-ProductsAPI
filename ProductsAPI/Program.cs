@@ -28,7 +28,7 @@ if (builder.Environment.IsDevelopment())
 }
 else 
 {
-    builder.Services.AddTransient<IProductRepository, ProductRepository>();
+    builder.Services.AddSingleton<IProductRepository, ProductRepository>();
 }
 
 var app = builder.Build();
