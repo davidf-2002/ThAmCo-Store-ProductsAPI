@@ -26,11 +26,8 @@ jobs:
 
 
         # Run the unit tests
-      - name: Run unit tests 
-        run: dotnet test --configuration release --no-restore
-
       - name: Run unit tests
-        run: dotnet test --configuration release --no-build --logger trx --results-directory ./TestResults
+        run: dotnet test --configuration release --no-build --logger "trx" --results-directory ./TestResults
 
       - name: Store test results
         uses: actions/upload-artifact@v4
