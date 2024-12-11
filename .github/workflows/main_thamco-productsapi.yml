@@ -9,6 +9,10 @@ on:
       - dev
   workflow_dispatch:
 
+env:
+  PROJECT_PATH: ./ThAmCo.ProductsAPI
+  PUBLISH_PATH: ./myapp
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,13 +42,13 @@ jobs:
 
         
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish -c Release -o PUBLISH_PATH
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: PUBLISH_PATH
 
   deploy:
     runs-on: ubuntu-latest
