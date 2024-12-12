@@ -7,7 +7,6 @@ namespace ProductsAPI.Repository;
 
 public class ProductRepository : IProductRepository
 {
-
     private readonly ProductContext _context;
 
     public ProductRepository(ProductContext context)
@@ -25,28 +24,30 @@ public class ProductRepository : IProductRepository
         return await _context.Products.FindAsync(id);
     }
 
-    public async Task<Product> AddProductAsync(Product product)
+    public async Task<Product?> AddProductAsync(Product product)
     {
         await _context.Products.AddAsync(product);
         await _context.SaveChangesAsync();
         return product;
     }
 
-    public async Task<Product> UpdateProductAsync(Product product)
+    public async Task<Product?> UpdateProductAsync(Product product)
     {
         _context.Products.Update(product);
         await _context.SaveChangesAsync();
         return product;
     }
 
-    public async void DeleteProductAsync(int id)
+    public async Task<bool> DeleteProductAsync(int id)
     {
         var product = await _context.Products.FindAsync(id);
         if (product != null)
         {
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
+            return true;
         }
+        return false;
     }
 
 }

@@ -25,20 +25,38 @@ public class ProductRepositoryFake : IProductRepository
         return Task.FromResult(product);
     }
 
-    public Task<Product> AddProductAsync(Product product)
+    public Task<Product?> AddProductAsync(Product product)
     {
-        throw new NotImplementedException();    // TODO
-        
+        int newId = _products.Max(p => p.Id) + 1; 
+        product.Id = newId;
+        _products.Add(product);
+        return Task.FromResult<Product?>(product);
     }
 
-    public Task<Product> UpdateProductAsync(Product prodcut)
+    public Task<Product?> UpdateProductAsync(Product product)
     {
-        throw new NotImplementedException();    // TODO
+        var existingProduct = _products.FirstOrDefault(p => p.Id == product.Id);
+        if (existingProduct == null)
+        {
+            return Task.FromResult<Product?>(null);
+        }
+        existingProduct.Name = product.Name;
+        existingProduct.Description = product.Description;
+        existingProduct.Price = product.Price;
+        existingProduct.StockStatus = product.StockStatus;
+        existingProduct.LastUpdated = DateTime.Now;
+        return Task.FromResult<Product?>(existingProduct);
     }
 
-    public void DeleteProductAsync(int id)
+    public Task<bool> DeleteProductAsync(int id)
     {
-        throw new NotImplementedException();    // TODO
+        var product = _products.FirstOrDefault(p => p.Id == id);
+        if (product == null)
+        {
+            return Task.FromResult(false);
+        }
+        _products.Remove(product);
+        return Task.FromResult(true);
     }
 
 }

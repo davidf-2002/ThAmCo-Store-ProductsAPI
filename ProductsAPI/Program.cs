@@ -1,6 +1,8 @@
 using ProductsAPI.Repository;
+using ProductsAPI.Models;
 using ProductsAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,25 +12,41 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-// Configure DbContext using the connection string
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// // Configure DbContext using the connection string
+// var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// builder.Services.AddDbContext<ProductContext>(options =>
+//     options.UseSqlServer(connectionString));
+// if (string.IsNullOrEmpty(connectionString))
+// {
+//     throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
+// }
 
 builder.Services.AddDbContext<ProductContext>(options =>
-    options.UseSqlServer(connectionString));
-
-if (string.IsNullOrEmpty(connectionString))
 {
-    throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
-}
+    if (builder.Environment.IsDevelopment())
+    {
+        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var path = Environment.GetFolderPath(folder);
+        var dbPath = Path.Join(path, "comments.db");
+        options.UseSqlite($"Data Source={dbPath}");
+        options.EnableDetailedErrors();
+        options.EnableSensitiveDataLogging();
+    }
+    else
+    {
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        options.UseSqlServer(connectionString);
+    }
+});
 
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>(); // Using .AddTransient would mean everytime a request is made to the repository, it would reinitialise the data therefore it would forget
+    builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>(); // Using Singleton ensures that the state of the fake data persists across multiple requests
 }
 else 
 {
-    builder.Services.AddSingleton<IProductRepository, ProductRepository>();
+    builder.Services.AddScoped<IProductRepository, ProductRepository>();
 }
 
 var app = builder.Build();
@@ -42,29 +60,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
-
-
-// Products endpoints
+// GET: api/Products
 app.MapGet("/products", async (IProductRepository repo) =>
 {
     var products = await repo.GetProductsAsync();
@@ -73,6 +70,7 @@ app.MapGet("/products", async (IProductRepository repo) =>
 .WithName("GetProducts")
 .WithOpenApi();
 
+// GET: api/Products/5
 app.MapGet("/products/{id}", async (int id, IProductRepository repo) =>
 {
     var product = await repo.GetProductAsync(id);
@@ -81,11 +79,73 @@ app.MapGet("/products/{id}", async (int id, IProductRepository repo) =>
 .WithName("GetProductById")
 .WithOpenApi();
 
+// POST: api/Products
+app.MapPost("/products", async (Product product, IProductRepository repo) =>
+{
+    try
+    {
+        var createdProduct = await repo.AddProductAsync(product);
+        if (createdProduct is null)
+        {
+            return Results.Problem("Product could not be created");
+        }
+        return Results.Created($"/products/{createdProduct.Id}", createdProduct);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+})
+.WithName("AddProduct")
+.WithOpenApi();
 
+// PUT: api/Products/5
+app.MapPut("/products/{id}", async (int id, Product product, IProductRepository repo) =>
+{
+    var existingProduct = await repo.GetProductAsync(id);       // Check if the product exists
+    if (existingProduct is null)
+    {
+        return Results.NotFound();
+    }
+    try
+    {
+        product.Id = id; // Ensure the product ID is set correctly.
+        var updatedProduct = await repo.UpdateProductAsync(product);
+        if (updatedProduct is null)
+        {
+            return Results.Problem("Product could not be updated");
+        }
+        return Results.Ok(updatedProduct);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+})
+.WithName("UpdateProduct")
+.WithOpenApi();
+
+// DELETE: api/Products/5
+app.MapDelete("/products/{id}", async (int id, IProductRepository repo) =>
+{
+    try
+    {
+        var success = await repo.DeleteProductAsync(id);
+        if (success)
+        {
+            return Results.Ok($"Product with ID {id} deleted successfully.");
+        }
+        else
+        {
+            return Results.NotFound();
+        }
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+})
+.WithName("DeleteProduct")
+.WithOpenApi();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
