@@ -25,9 +25,9 @@ builder.Services.AddDbContext<ProductContext>(options =>
 {
     if (builder.Environment.IsDevelopment())
     {
-        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var folder = Environment.SpecialFolder.MyDocuments;
         var path = Environment.GetFolderPath(folder);
-        var dbPath = Path.Join(path, "comments.db");
+        var dbPath = Path.Join(path, "products.db");
         options.UseSqlite($"Data Source={dbPath}");
         options.EnableDetailedErrors();
         options.EnableSensitiveDataLogging();
