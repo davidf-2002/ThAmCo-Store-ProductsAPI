@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT_PATH: ./ThAmCo.ProductsAPI
+  PROJECT_PATH: ./ProductsAPI
   PUBLISH_PATH: ./myapp
 
 jobs:
@@ -42,13 +42,14 @@ jobs:
 
         
       - name: dotnet publish
-        run: dotnet publish -c Release -o PUBLISH_PATH
+        run: dotnet publish ${{ env.PROJECT_PATH }}/ProductsAPI.csproj -c Release -o ${{ env.PUBLISH_PATH }}
+      
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: PUBLISH_PATH
+          path: ${{ env.PUBLISH_PATH }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -64,6 +65,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ${{ env.PUBLISH_PATH }}
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -78,5 +80,5 @@ jobs:
         with:
           app-name: 'ThAmCo-ProductsAPI'
           slot-name: 'Production'
-          package: .
+          package: ${{ env.PUBLISH_PATH }}
           
