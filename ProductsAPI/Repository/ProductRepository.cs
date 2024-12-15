@@ -16,12 +16,14 @@ public class ProductRepository : IProductRepository
 
     public async Task<IEnumerable<Product>> GetProductsAsync()
     {
-        return await _context.Products.ToListAsync();
+        var products = _context.Products.ToList();
+        return await Task.FromResult(products);
     }
 
     public async Task<Product?> GetProductAsync(int id)
     {
-        return await _context.Products.FindAsync(id);
+        var product = _context.Products.FirstOrDefault(p => p.Id == id);
+        return await Task.FromResult(product);
     }
 
     public async Task<Product?> AddProductAsync(Product product)
