@@ -1,18 +1,19 @@
-// using System.Collections.Generic;
-// using System.Linq;
-// using System.Threading.Tasks;
-// using Microsoft.EntityFrameworkCore;
-// using Microsoft.VisualStudio.TestTools.UnitTesting;
-// using Moq;
-// using ProductsAPI.Data;
-// using ProductsAPI.Models;
-// using ProductsAPI.Repository;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using ProductsAPI.Data;
+using ProductsAPI.Models;
+using ProductsAPI.Repository;
 
-// namespace ThAmCo.ProductsAPI.Test
-// {
-//     [TestClass]
-//     public class ProductRepositoryTests
-//     {
+namespace ThAmCo.ProductsAPI.Test
+{
+    [TestClass]
+    public class ProductRepositoryTests
+    {
+        
 //         private Mock<ProductContext> _mockContext = null!;
 //         private Mock<DbSet<Product>> _mockSet = null!;
 //         private ProductRepository _repository = null!;
@@ -48,5 +49,5 @@
 //             Assert.AreEqual(2, result.Count());
 //             Assert.AreEqual("T-shirt", result.First().Name);
 //         }
-//     }
-// }
+    }
+}
