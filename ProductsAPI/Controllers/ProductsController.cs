@@ -34,7 +34,7 @@ public class ProductsController : ControllerBase
         if (product == null)
         {
             _logger.LogWarning($"Product with ID {id} not found.");
-            return NotFound(product);
+            return NotFound();
         }
         return Ok(product);
     }
@@ -73,7 +73,7 @@ public class ProductsController : ControllerBase
         }
         if (id != product.Id)
         {
-            return BadRequest("Product ID mismatch");
+            return BadRequest();
         }
 
         try
