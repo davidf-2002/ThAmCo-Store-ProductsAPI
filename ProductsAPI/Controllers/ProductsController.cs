@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ProductsAPI.Repository;
 using ProductsAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ThAmCo.ProductsAPI.Controllers;
 
@@ -40,6 +41,7 @@ public class ProductsController : ControllerBase
     }
 
     // POST: api/Products
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> PostProduct([FromBody] Product product)
     {
@@ -64,6 +66,7 @@ public class ProductsController : ControllerBase
     }
 
     // PUT: api/Products/5
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> PutProduct(int id, [FromBody] Product product)
     {
@@ -92,6 +95,7 @@ public class ProductsController : ControllerBase
     }
 
     // DELETE: api/Products/5
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
