@@ -41,7 +41,7 @@ public class ProductsController : ControllerBase
     }
 
     // POST: api/Products
-    [Authorize]
+    [Authorize("write:products")]
     [HttpPost]
     public async Task<IActionResult> PostProduct([FromBody] Product product)
     {
@@ -66,7 +66,7 @@ public class ProductsController : ControllerBase
     }
 
     // PUT: api/Products/5
-    [Authorize]
+    [Authorize("write:products")]
     [HttpPut("{id}")]
     public async Task<IActionResult> PutProduct(int id, [FromBody] Product product)
     {
@@ -95,7 +95,7 @@ public class ProductsController : ControllerBase
     }
 
     // DELETE: api/Products/5
-    [Authorize]
+    [Authorize("write:products")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
