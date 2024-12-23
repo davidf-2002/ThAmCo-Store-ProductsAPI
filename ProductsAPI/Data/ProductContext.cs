@@ -23,9 +23,12 @@ public class ProductContext : DbContext
     {
         modelBuilder.Entity<Product>(entity =>
         {
+            entity.HasKey(p => p.Id); 
+            entity.Property(p => p.Id).ValueGeneratedOnAdd(); 
+
             entity.Property(p => p.Name)
                   .IsRequired()
-                  .HasMaxLength(100); 
+                  .HasMaxLength(100);
 
             entity.Property(p => p.Description)
                   .IsRequired()
@@ -40,7 +43,9 @@ public class ProductContext : DbContext
                   .HasMaxLength(50);
 
             entity.Property(p => p.LastUpdated)
-                  .HasColumnType("datetime2"); 
+                .HasColumnType("datetime2")
+                .ValueGeneratedOnAddOrUpdate() 
+                .HasDefaultValueSql("GETDATE()");
         });
     }
 

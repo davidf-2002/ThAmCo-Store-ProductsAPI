@@ -14,16 +14,18 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 
+var domain = builder.Configuration["Auth0:Domain"];
+var audience = builder.Configuration["Auth0:Audience"];
+
 // Provision Auth server using Auth0
-var domain = "https://dev-4nmkq13nhzjzkjvm.eu.auth0.com/";
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>  // This configures the JWT Bearer authentication handler, where the client presents a bearer token.
 {
-    options.Authority = builder.Configuration["Auth0:Domain"];  // This URL is used to obtain the public keys to validate the signature of the token.
-    options.Audience = builder.Configuration["Auth0:Audience"]; // Ensures that the token is presented to the correct application
+    options.Authority = domain;  // This URL is used to obtain the public keys to validate the signature of the token.
+    options.Audience = audience; // Ensures that the token is presented to the correct application
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
