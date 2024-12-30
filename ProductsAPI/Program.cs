@@ -14,10 +14,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 
+// Validate JWT tokens issued by Auth server
 var domain = builder.Configuration["Auth0:Domain"];
 var audience = builder.Configuration["Auth0:Audience"];
 
-// Provision Auth server using Auth0
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -42,22 +42,28 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
 
-// Configure DbContext using the connection string
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
+// Configure DbContext using the connection string, with Retry pattern
 builder.Services.AddDbContext<ProductContext>(options =>
-    options.UseSqlServer(connectionString));
-
-if (string.IsNullOrEmpty(connectionString))
 {
-    throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
-}
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
+    }
+    options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(6),
+            errorNumbersToAdd: null
+        )
+    );
+});
 
 
 if (builder.Environment.IsDevelopment())
 {
-    //builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Using Singleton ensures that the state of the fake data persists across multiple requests
-    builder.Services.AddScoped<IProductRepository, ProductRepository>();
+    builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Using Singleton ensures that the state of the fake data persists across multiple requests
+    //builder.Services.AddScoped<IProductRepository, ProductRepository>();
 }
 else 
 {
