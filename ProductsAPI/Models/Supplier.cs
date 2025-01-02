@@ -14,11 +14,11 @@ public class Supplier
 
     [Required] 
     [StringLength(100)]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [Required]
     [StringLength(100)]
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
     public List<ProductSupplier> ProductSuppliers { get; set; }
 }

@@ -7,9 +7,9 @@ public class ProductRepositoryFake : IProductRepository
 {
     private readonly List<Product> _products = new List<Product>
     {
-        new Product { Id = 1, Name = "T-shirt", Description = "Jack & Jones", Price = 11.50m, StockStatus = "In Stock", LastUpdated = new DateTime(2024, 11, 07)},
-        new Product { Id = 2, Name = "Jeans", Description = "Armani", Price = 30.00m, StockStatus = "In Stock", LastUpdated = new DateTime(2024, 11, 07)},
-        new Product { Id = 3, Name = "Hoody", Description = "Boss", Price = 20.99m, StockStatus = "Out of Stock", LastUpdated = new DateTime(2024, 11, 07)}    
+        new Product { Id = 1, Name = "T-shirt", Description = "Jack & Jones", Price = 11.50m, CategoryId = 1, StockLevel = 3, LastUpdated = new DateTime(2024, 11, 07)},
+        new Product { Id = 2, Name = "Jeans", Description = "Armani", Price = 30.00m, CategoryId = 1, StockLevel = 0, LastUpdated = new DateTime(2024, 11, 07)},
+        new Product { Id = 3, Name = "Hoody", Description = "Boss", Price = 20.99m, CategoryId = 1, StockLevel = 7, LastUpdated = new DateTime(2024, 11, 07)}    
     };
 
     public async Task<IEnumerable<Product>> GetProductsAsync()
@@ -42,7 +42,7 @@ public class ProductRepositoryFake : IProductRepository
         existingProduct.Name = product.Name;
         existingProduct.Description = product.Description;
         existingProduct.Price = product.Price;
-        existingProduct.StockStatus = product.StockStatus;
+        existingProduct.StockLevel = product.StockLevel;
         existingProduct.LastUpdated = DateTime.Now;
         return await Task.FromResult<Product?>(existingProduct);
     }

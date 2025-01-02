@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddLogging();
 
 
 // Validate JWT tokens issued by Auth server
@@ -45,35 +46,25 @@ builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 // Configure DbContext using the connection string, with Retry pattern
 builder.Services.AddDbContext<ProductContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString(
-        builder.Environment.IsDevelopment() ? "SqliteConnection" : "DefaultConnection"
-    );
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     if (string.IsNullOrEmpty(connectionString))
     {
-        throw new InvalidOperationException("The connection string is not configured.");
+        throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
     }
-
-    if (builder.Environment.IsDevelopment())
-    {
-        options.UseSqlite(connectionString);
-    }
-    else
-    {
-        options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 3,
-                maxRetryDelay: TimeSpan.FromSeconds(6),
-                errorNumbersToAdd: null
-            )
-        );
-    }
+    options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(6),
+            errorNumbersToAdd: null
+        )
+    );
 });
 
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Using Singleton ensures that the state of the fake data persists across multiple requests
-    //builder.Services.AddScoped<IProductRepository, ProductRepository>();
+    //builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Using Singleton ensures that the state of the fake data persists across multiple requests
+    builder.Services.AddScoped<IProductRepository, ProductRepository>();
 }
 else 
 {

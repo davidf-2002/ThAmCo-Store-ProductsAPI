@@ -75,6 +75,23 @@ namespace ProductsAPI.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+                migrationBuilder.DropForeignKey(
+                name: "FK_ProductSuppliers_Products_ProductId",
+                table: "ProductSuppliers");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Products_Categories_CategoryId",
+                table: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "ProductSuppliers");
+
+            migrationBuilder.DropTable(
+                name: "Suppliers");
+
             migrationBuilder.DropPrimaryKey(
                 name: "PK_Products",
                 table: "Products");

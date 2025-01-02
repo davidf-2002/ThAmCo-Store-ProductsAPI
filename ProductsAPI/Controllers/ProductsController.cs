@@ -41,7 +41,7 @@ public class ProductsController : ControllerBase
     }
 
     // POST: api/Products
-    [Authorize("write:products")]
+    //[Authorize("write:products")]
     [HttpPost]
     public async Task<IActionResult> PostProduct([FromBody] Product product)
     {
@@ -61,6 +61,7 @@ public class ProductsController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "An error occurred while adding the product.");
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }

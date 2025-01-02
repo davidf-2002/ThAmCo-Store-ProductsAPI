@@ -16,18 +16,30 @@ public class ProductRepository : IProductRepository
 
     public async Task<IEnumerable<Product>> GetProductsAsync()
     {
-        var products = _context.Products.ToList();
+        var products = await _context.Products
+        .Include(p => p.ProductSuppliers)
+        .ThenInclude(ps => ps.Supplier)
+        .ToListAsync();        
         return await Task.FromResult(products);
     }
 
     public async Task<Product?> GetProductAsync(int id)
     {
-        var product = _context.Products.FirstOrDefault(p => p.Id == id);
-        return await Task.FromResult(product);
+        var product = await _context.Products
+        .Include(p => p.ProductSuppliers)
+        .ThenInclude(ps => ps.Supplier)
+        .FirstOrDefaultAsync(p => p.Id == id);
+        return product;
     }
 
     public async Task<Product?> AddProductAsync(Product product)
     {
+        var category = await _context.Categories.FindAsync(product.CategoryId);
+        if (category == null)
+        {
+            throw new ArgumentException("Category does not exist");
+        }
+        product.Category = category;
         await _context.Products.AddAsync(product);
         await _context.SaveChangesAsync();
         return product;
