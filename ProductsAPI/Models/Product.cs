@@ -31,8 +31,7 @@ public class Product
     [Column(TypeName = "datetime2")]
     public DateTime LastUpdated { get; set; }
 
-    [Required]
-    public int CategoryId { get; set; }
+    public int? CategoryId { get; set; }
 
     [JsonIgnore]
     public Category? Category { get; set; } = null!;

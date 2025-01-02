@@ -44,8 +44,8 @@ public class ProductContext : DbContext
             // Configuring the relationship with Category
             entity.HasOne(p => p.Category)
                 .WithMany(c => c.Products)
-                .HasForeignKey(p => p.CategoryId)
-                .IsRequired(); // Ensuring the foreign key to Category is not nullable
+                .HasForeignKey(p => p.CategoryId);
+                //.IsRequired(); // Ensuring the foreign key to Category is not nullable
 
             entity.Property(p => p.StockLevel).IsRequired(); 
         });
