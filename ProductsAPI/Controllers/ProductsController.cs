@@ -41,7 +41,7 @@ public class ProductsController : ControllerBase
     }
 
     // POST: api/Products
-    //[Authorize("write:products")]
+    [Authorize("write:products")]
     [HttpPost]
     public async Task<IActionResult> PostProduct([FromBody] Product product)
     {
