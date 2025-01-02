@@ -6,6 +6,12 @@ namespace ProductsAPI.Models;
 
 public class Product
 {
+    public Product()
+    {
+        LastUpdated = DateTime.Now;
+        ProductSuppliers = new List<ProductSupplier>();
+    }
+    
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set;}
@@ -28,4 +34,11 @@ public class Product
 
     [Column(TypeName = "datetime2")]
     public DateTime LastUpdated { get; set; }
+
+    [Required]
+    public String Category { get; set; }
+
+    public int StockLevel { get; set; }
+
+    public List<ProductSupplier> ProductSuppliers { get; set; }
 }

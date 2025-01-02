@@ -45,18 +45,28 @@ builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 // Configure DbContext using the connection string, with Retry pattern
 builder.Services.AddDbContext<ProductContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    var connectionString = builder.Configuration.GetConnectionString(
+        builder.Environment.IsDevelopment() ? "SqliteConnection" : "DefaultConnection"
+    );
     if (string.IsNullOrEmpty(connectionString))
     {
-        throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
+        throw new InvalidOperationException("The connection string is not configured.");
     }
-    options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
-        sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 3,
-            maxRetryDelay: TimeSpan.FromSeconds(6),
-            errorNumbersToAdd: null
-        )
-    );
+
+    if (builder.Environment.IsDevelopment())
+    {
+        options.UseSqlite(connectionString);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(6),
+                errorNumbersToAdd: null
+            )
+        );
+    }
 });
 
 
