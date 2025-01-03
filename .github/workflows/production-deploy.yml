@@ -1,0 +1,38 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_PATH: ./ProductsAPI
+  PUBLISH_PATH: ./myapp
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: 
+      name: Production
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+          path: deploy
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      - name: Deploy to Production
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'ThAmCo-ProductsAPI'
+          package: deploy

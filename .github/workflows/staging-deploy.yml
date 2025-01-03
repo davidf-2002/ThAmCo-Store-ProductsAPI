@@ -1,0 +1,64 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - dev
+
+env:
+  PROJECT_PATH: ./ProductsAPI
+  PUBLISH_PATH: ./myapp
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Build with dotnet
+        run: dotnet build ${{ env.PROJECT_PATH }}/ProductsAPI.csproj --configuration Release
+
+      - name: Run unit tests
+        run: dotnet test ${{ env.PROJECT_PATH }}/ProductsAPI.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.xml"
+        
+      - name: Publish App
+        run: dotnet publish ${{ env.PROJECT_PATH }}/ProductsAPI.csproj -c Release -o ${{ env.PUBLISH_PATH }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{ env.PUBLISH_PATH }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    environment: 
+      name: Staging
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+          path: ${{ env.PUBLISH_PATH }}
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      - name: Deploy to Staging Slot
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'ThAmCo-ProductsAPI'
+          slot-name: 'staging'
+          package: ${{ env.PUBLISH_PATH }}
