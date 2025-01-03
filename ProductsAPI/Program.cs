@@ -1,91 +1,102 @@
 using ProductsAPI.Repository;
 using ProductsAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
+builder.Services.AddLogging();
 
 
-// Configure DbContext using the connection string
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Validate JWT tokens issued by Auth server
+var domain = builder.Configuration["Auth0:Domain"];
+var audience = builder.Configuration["Auth0:Audience"];
 
-builder.Services.AddDbContext<ProductContext>(options =>
-    options.UseSqlServer(connectionString));
-
-if (string.IsNullOrEmpty(connectionString))
+builder.Services.AddAuthentication(options =>
 {
-    throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
-}
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>  // This configures the JWT Bearer authentication handler, where the client presents a bearer token.
+{
+    options.Authority = domain;  // This URL is used to obtain the public keys to validate the signature of the token.
+    options.Audience = audience; // Ensures that the token is presented to the correct application
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        NameClaimType = ClaimTypes.NameIdentifier
+    };
+});
+
+// Add policies for the scopes
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("write:products", policy => policy.Requirements.Add(new
+    HasScopeRequirement("write:products", domain)));
+});
+builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+
+
+// Configure DbContext using the connection string, with Retry pattern
+builder.Services.AddDbContext<ProductContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
+    }
+    options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(6),
+            errorNumbersToAdd: null
+        )
+    );
+});
 
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>(); // Using .AddTransient would mean everytime a request is made to the repository, it would reinitialise the data therefore it would forget
+    //builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Using Singleton ensures that the state of the fake data persists across multiple requests
+    builder.Services.AddScoped<IProductRepository, ProductRepository>();
 }
 else 
 {
-    builder.Services.AddSingleton<IProductRepository, ProductRepository>();
+    builder.Services.AddScoped<IProductRepository, ProductRepository>();
 }
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        c.RoutePrefix = ""; 
+    });
 }
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.UseRouting();
+
+app.MapControllers();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.UseEndpoints(endpoints =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
-
-
-// Products endpoints
-app.MapGet("/products", async (IProductRepository repo) =>
-{
-    var products = await repo.GetProductsAsync();
-    return Results.Ok(products);
-})
-.WithName("GetProducts")
-.WithOpenApi();
-
-app.MapGet("/products/{id}", async (int id, IProductRepository repo) =>
-{
-    var product = await repo.GetProductAsync(id);
-    return product is not null ? Results.Ok(product) : Results.NotFound();
-})
-.WithName("GetProductById")
-.WithOpenApi();
-
-
+    endpoints.MapControllers();
+});
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

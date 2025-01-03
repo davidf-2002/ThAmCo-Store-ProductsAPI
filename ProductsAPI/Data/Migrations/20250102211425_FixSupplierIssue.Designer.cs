@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProductsAPI.Data;
 
@@ -11,9 +12,11 @@ using ProductsAPI.Data;
 namespace ProductsAPI.Data.Migrations
 {
     [DbContext(typeof(ProductContext))]
-    partial class ProductContextModelSnapshot : ModelSnapshot
+    [Migration("20250102211425_FixSupplierIssue")]
+    partial class FixSupplierIssue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,7 +68,7 @@ namespace ProductsAPI.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -101,7 +104,7 @@ namespace ProductsAPI.Data.Migrations
                             Id = 1,
                             CategoryId = 1,
                             Description = "Cotton white",
-                            LastUpdated = new DateTime(2025, 1, 2, 22, 53, 19, 140, DateTimeKind.Local).AddTicks(4769),
+                            LastUpdated = new DateTime(2025, 1, 2, 21, 14, 25, 257, DateTimeKind.Local).AddTicks(6109),
                             Name = "T-shirt",
                             Price = 15.99m,
                             StockLevel = 2
@@ -111,7 +114,7 @@ namespace ProductsAPI.Data.Migrations
                             Id = 2,
                             CategoryId = 2,
                             Description = "Best for marathons",
-                            LastUpdated = new DateTime(2025, 1, 2, 22, 53, 19, 140, DateTimeKind.Local).AddTicks(4821),
+                            LastUpdated = new DateTime(2025, 1, 2, 21, 14, 25, 257, DateTimeKind.Local).AddTicks(6179),
                             Name = "Running Shoes",
                             Price = 50.00m,
                             StockLevel = 7
@@ -121,7 +124,7 @@ namespace ProductsAPI.Data.Migrations
                             Id = 3,
                             CategoryId = 3,
                             Description = "Adjustable size",
-                            LastUpdated = new DateTime(2025, 1, 2, 22, 53, 19, 140, DateTimeKind.Local).AddTicks(4824),
+                            LastUpdated = new DateTime(2025, 1, 2, 21, 14, 25, 257, DateTimeKind.Local).AddTicks(6186),
                             Name = "Baseball Cap",
                             Price = 12.50m,
                             StockLevel = 0
@@ -219,7 +222,9 @@ namespace ProductsAPI.Data.Migrations
                 {
                     b.HasOne("ProductsAPI.Models.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
                 });
