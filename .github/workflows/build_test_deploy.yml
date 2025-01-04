@@ -30,7 +30,10 @@ jobs:
             
 
           - name: Apply EF Core Migrations
-            run: dotnet ef database update --project ${{ env.PROJECT_PATH }} -- --environment Production
+            run: |
+              export ASPNETCORE_ENVIRONMENT=Production
+              export DefaultConnection=${{ secrets.DATABASE_CONNECTION_STRING }}
+              dotnet ef database update --project ${{ env.PROJECT_PATH }}
             env:
               ASPNETCORE_ENVIRONMENT: Production
               DefaultConnection: ${{ secrets.DATABASE_CONNECTION_STRING }}
