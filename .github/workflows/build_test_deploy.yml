@@ -7,7 +7,6 @@ on:
 env:
   PROJECT_PATH: ./ProductsAPI
   PUBLISH_PATH: ./myapp
-  DOTNET_EF_CONNECTION_STRING: ${{ secrets.DATABASE_CONNECTION_STRING }}
 
 jobs:
     build_and_test:
@@ -29,12 +28,12 @@ jobs:
           - name: Run unit tests
             run: dotnet test ${{ env.PROJECT_PATH }}/ProductsAPI.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.xml"
             
-            
+
           - name: Apply EF Core Migrations
             run: dotnet ef database update --project ${{ env.PROJECT_PATH }} -- --environment Production
             env:
               ASPNETCORE_ENVIRONMENT: Production
-              DefaultConnection: ${{ env.DOTNET_EF_CONNECTION_STRING }}
+              DefaultConnection: ${{ secrets.DATABASE_CONNECTION_STRING }}
 
 
           - name: Publish App
