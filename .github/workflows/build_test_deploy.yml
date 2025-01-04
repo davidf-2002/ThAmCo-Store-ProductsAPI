@@ -95,6 +95,9 @@ jobs:
               with:
                   name: .net-app
                   path: ${{ env.PUBLISH_PATH }}
+
+            
+            
     
             - name: Deploy to Production
               uses: azure/webapps-deploy@v3
