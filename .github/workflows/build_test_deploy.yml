@@ -46,9 +46,7 @@ jobs:
             contents: read
             id-token: write #This is required for requesting the JWT
         
-        steps:
-            - uses: actions/checkout@v4
-            
+        steps:            
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
@@ -76,8 +74,6 @@ jobs:
             id-token: write #This is required for requesting the JWT
 
         steps:
-            - uses: actions/checkout@v4
-
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
