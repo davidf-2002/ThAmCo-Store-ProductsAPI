@@ -39,7 +39,7 @@ jobs:
               DefaultConnection: ${{ secrets.DATABASE_CONNECTION_STRING }}
 
           - name: Upload Migration Script
-            uses: actions/upload-artifact@v2
+            uses: actions/upload-artifact@v3
             with:
               name: Migration-Script
               path: ./migrations.sql
