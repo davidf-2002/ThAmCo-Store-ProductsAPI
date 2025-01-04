@@ -16,6 +16,7 @@ jobs:
             url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
         runs-on: ubuntu-latest
         permissions:
+            contents: read
             id-token: write #This is required for requesting the JWT
         
         steps:
@@ -42,6 +43,7 @@ jobs:
             url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
         runs-on: ubuntu-latest
         permissions:
+            contents: read
             id-token: write #This is required for requesting the JWT
 
         steps:
