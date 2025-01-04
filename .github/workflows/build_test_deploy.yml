@@ -30,10 +30,9 @@ jobs:
             
 
           - name: Apply EF Core Migrations
-            run: dotnet ef database update --project ${{ env.PROJECT_PATH }}
+            run: dotnet ef database update --project ${{ env.PROJECT_PATH }} --connection ${{ secrets.DATABASE_CONNECTION_STRING }}
             env:
               ASPNETCORE_ENVIRONMENT: Production
-              DefaultConnection: ${{ secrets.DATABASE_CONNECTION_STRING }}
 
 
           - name: Publish App
