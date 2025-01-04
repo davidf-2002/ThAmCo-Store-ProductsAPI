@@ -6,6 +6,9 @@
 # Configuration files
 appsettings.Development.json
 
+ThAmco.WebApp/
+ThAmCo.ProductsAPI.Test/
+
 # dotenv files
 .env
 
