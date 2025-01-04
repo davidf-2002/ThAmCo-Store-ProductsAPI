@@ -7,6 +7,7 @@ on:
 env:
   PROJECT_PATH: ./ProductsAPI
   PUBLISH_PATH: ./myapp
+  DOTNET_EF_CONNECTION_STRING: ${{ secrets.DATABASE_CONNECTION_STRING }}
 
 jobs:
     build_and_test:
@@ -34,6 +35,10 @@ jobs:
               name: .net-app
               path: ${{ env.PUBLISH_PATH }}
 
+          - name: Apply EF Core Migrations
+            run: dotnet ef database update --project ${{ env.PROJECT_PATH }} -- --environment Production
+            env:
+              ConnectionString: ${{ secrets.DATABASE_CONNECTION_STRING }}
 
     deploy_to_staging:
         if: ${{ github.ref == 'refs/heads/dev' }}
