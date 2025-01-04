@@ -27,17 +27,24 @@ jobs:
     
           - name: Run unit tests
             run: dotnet test ${{ env.PROJECT_PATH }}/ProductsAPI.csproj --configuration Release --no-build --logger "trx;LogFileName=test_results.xml"
-            
-
-          - name: Apply EF Core Migrations
-            run: dotnet ef database update --project ${{ env.PROJECT_PATH }} --connection ${{ secrets.DATABASE_CONNECTION_STRING }}
-            env:
-              ASPNETCORE_ENVIRONMENT: Production
-
 
           - name: Publish App
             run: dotnet publish ${{ env.PROJECT_PATH }}/ProductsAPI.csproj -c Release -o ${{ env.PUBLISH_PATH }}
-    
+
+
+          - name: Generate Migration Script
+            run: dotnet ef migrations script --idempotent --output ./migrations.sql --project ${{ env.PROJECT_PATH }}
+            env:
+              ASPNETCORE_ENVIRONMENT: Production
+              DefaultConnection: ${{ secrets.DATABASE_CONNECTION_STRING }}
+
+          - name: Upload Migration Script
+            uses: actions/upload-artifact@v2
+            with:
+              name: Migration-Script
+              path: ./migrations.sql
+            
+
           - name: Upload artifact
             uses: actions/upload-artifact@v4
             with:
