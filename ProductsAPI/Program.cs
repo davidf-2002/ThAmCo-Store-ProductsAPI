@@ -63,8 +63,7 @@ builder.Services.AddDbContext<ProductContext>(options =>
 
 if (builder.Environment.IsDevelopment())
 {
-    //builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Using Singleton ensures that the state of the fake data persists across multiple requests
-    builder.Services.AddScoped<IProductRepository, ProductRepository>();
+    builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Using Singleton ensures that the state of the fake data persists across multiple requests
 }
 else 
 {
@@ -94,9 +93,12 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
+app.MapControllers();
+
+app.MapGet("/", context =>
 {
-    endpoints.MapControllers();
+    context.Response.Redirect("/products");
+    return Task.CompletedTask;
 });
 
 app.Run();
