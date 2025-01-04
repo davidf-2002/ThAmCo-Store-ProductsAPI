@@ -65,7 +65,7 @@ jobs:
     deploy_to_production:
         if: ${{ github.ref == 'refs/heads/main' }}
         environment: 
-            name: Staging
+            name: Production
             url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
         runs-on: ubuntu-latest
         needs: build_and_test
