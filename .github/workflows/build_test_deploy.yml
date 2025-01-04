@@ -38,11 +38,6 @@ jobs:
               name: .net-app
               path: ${{ env.PUBLISH_PATH }}
 
-          - name: Apply EF Core Migrations
-            run: dotnet ef database update --project ${{ env.PROJECT_PATH }} -- --environment Production
-            env:
-              ConnectionString: ${{ secrets.DATABASE_CONNECTION_STRING }}
-
     deploy_to_staging:
         if: ${{ github.ref == 'refs/heads/dev' }}
         environment: 
@@ -82,6 +77,12 @@ jobs:
             id-token: write #This is required for requesting the JWT
 
         steps:
+            - name: Apply EF Core Migrations
+              run: dotnet ef database update --project ${{ env.PROJECT_PATH }} -- --environment Production
+              env:
+                ASPNETCORE_ENVIRONMENT: Production
+                DefaultConnection: ${{ secrets.PRODUCTION_CONNECTION_STRING }}
+                
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
