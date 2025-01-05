@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authorization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddLogging();
 
@@ -42,46 +41,39 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // Configure DbContext using the connection string, with Retry pattern
 builder.Services.AddDbContext<ProductContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (string.IsNullOrEmpty(connectionString))
+    if (builder.Environment.IsDevelopment())
     {
-        throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
+        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var path = Environment.GetFolderPath(folder);
+        var dbPath = System.IO.Path.Join(path, "products.db");
+        options.UseSqlite($"Data source={dbPath}");
+        options.EnableDetailedErrors();
+        options.EnableSensitiveDataLogging();
     }
-    options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
-        sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 3,
-            maxRetryDelay: TimeSpan.FromSeconds(6),
-            errorNumbersToAdd: null
-        )
-    );
+    else
+    {
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
+        }
+        options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 3,
+                maxRetryDelay: TimeSpan.FromSeconds(6),
+                errorNumbersToAdd: null
+            )
+        );
+    }
 });
 
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Using Singleton ensures that the state of the fake data persists across multiple requests
-}
-else 
-{
-    builder.Services.AddScoped<IProductRepository, ProductRepository>();
-}
-
-
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-        c.RoutePrefix = ""; 
-    });
-}
 
 app.UseHttpsRedirection();
 
@@ -100,5 +92,25 @@ app.MapGet("/", context =>
     context.Response.Redirect("/products");
     return Task.CompletedTask;
 });
+
+// This creates a new scope to perform data seeding 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    if (app.Environment.IsDevelopment())
+    {
+        // var context = services.GetRequiredService<ProductContext>();
+        // context.Database.Migrate();
+        // try
+        // {
+        //     ProductInitialiser.Initialise(context);
+        // }
+        // catch (Exception e)
+        // {
+        //     var logger = services.GetRequiredService<ILogger<Program>>();
+        //     logger.LogDebug("Inserting test data failed.");
+        // }
+    }
+}
 
 app.Run();
