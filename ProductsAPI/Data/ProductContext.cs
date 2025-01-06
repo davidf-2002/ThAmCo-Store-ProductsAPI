@@ -23,8 +23,6 @@ public class ProductContext : DbContext
         ConfigureCategoryModel(modelBuilder);
         ConfigureSupplierModel(modelBuilder);
         ConfigureProductSupplierModel(modelBuilder);
-
-        SeedProductData(modelBuilder);
     }
 
     private void ConfigureProductModel(ModelBuilder modelBuilder)
@@ -79,33 +77,5 @@ public class ProductContext : DbContext
             entity.HasOne(ps => ps.Product).WithMany(p => p.ProductSuppliers).HasForeignKey(ps => ps.ProductId);
             entity.HasOne(ps => ps.Supplier).WithMany(s => s.ProductSuppliers).HasForeignKey(ps => ps.SupplierId);
         });
-    }
-
-    private void SeedProductData(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Category>().HasData(
-            new Category { Id = 1, Name = "Clothing" },
-            new Category { Id = 2, Name = "Footwear" },
-            new Category { Id = 3, Name = "Accessories" }
-        );
-        
-        modelBuilder.Entity<Product>().HasData(
-            new Product { Id = 1, Name = "T-shirt", Description = "Cotton white", Price = 15.99m, StockLevel = 2, CategoryId = 1 },
-            new Product { Id = 2, Name = "Running Shoes", Description = "Best for marathons", Price = 50.00m, StockLevel = 7, CategoryId = 2 },
-            new Product { Id = 3, Name = "Baseball Cap", Description = "Adjustable size", Price = 12.50m, StockLevel = 0, CategoryId = 3}
-        );
-
-        modelBuilder.Entity<Supplier>().HasData(
-            new Supplier { Id = 1, Name = "Global Textiles Inc", Email = "contact@globaltextiles.com" },
-            new Supplier { Id = 2, Name = "Footwear Co.", Email = "info@footwearco.com" },
-            new Supplier { Id = 3, Name = "Headgear Ltd.", Email = "support@headgearltd.com" }
-        );
-
-        modelBuilder.Entity<ProductSupplier>().HasData(
-            new ProductSupplier { Id = 1, ProductId = 1, SupplierId = 1 },
-            new ProductSupplier { Id = 2, ProductId = 2, SupplierId = 2 },
-            new ProductSupplier { Id = 3, ProductId = 3, SupplierId = 3 },
-            new ProductSupplier { Id = 4, ProductId = 1, SupplierId = 3 } 
-        );
     }
 }

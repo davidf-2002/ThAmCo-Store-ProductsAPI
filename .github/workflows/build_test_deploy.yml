@@ -96,8 +96,11 @@ jobs:
                   name: .net-app
                   path: ${{ env.PUBLISH_PATH }}
 
-            
-            
+            - name: Apply EF Core Migrations to Production
+              run: dotnet ef database update --project ${{ env.PROJECT_PATH }}
+              env:
+                ASPNETCORE_ENVIRONMENT: Production
+                ConnectionStrings__DefaultConnection: ${{ secrets.PRODUCTION_DB_CONNECTION_STRING }}
     
             - name: Deploy to Production
               uses: azure/webapps-deploy@v3
