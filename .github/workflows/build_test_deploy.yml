@@ -100,11 +100,19 @@ jobs:
                   name: .net-app
                   path: ${{ env.PUBLISH_PATH }}
 
-            - name: Apply EF Core Migrations to Production
-              run: dotnet ef database update --project ${{ env.PROJECT_PATH }}
-              env:
-                ASPNETCORE_ENVIRONMENT: Production
-                ConnectionStrings__DefaultConnection: ${{ secrets.DATABASE_CONNECTION_STRING }}
+              # Download the migrations.sql script
+            - name: Download Migration Script
+              uses: actions/download-artifact@v4
+              with:
+                name: Migration-Script
+                path: ./
+              
+              # Apply the migration script using Azure SQL Action
+            - name: Apply Migration Script to Production
+              uses: azure/sql-action@v2
+              with:
+                connection-string: ${{ secrets.PRODUCTION_DB_CONNECTION_STRING }}
+                sql-file: './migrations.sql'
     
             - name: Deploy to Production
               uses: azure/webapps-deploy@v3
