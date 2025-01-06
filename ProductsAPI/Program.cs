@@ -41,9 +41,17 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Singleton ensures that the state of the fake data persists across multiple requests
+}
+else 
+{
+    builder.Services.AddScoped<IProductRepository, ProductRepository>();
+}
 
+// Configure DBContext with the DB connection string
 builder.Services.AddDbContext<ProductContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -51,6 +59,7 @@ builder.Services.AddDbContext<ProductContext>(options =>
     {
         throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
     }
+    // Retry pattern for resilience
     options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
         sqlOptions.EnableRetryOnFailure(
             maxRetryCount: 3,
