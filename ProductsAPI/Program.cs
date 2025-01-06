@@ -14,6 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddLogging();
 
 
+
 // Validate JWT tokens issued by Auth server
 var domain = builder.Configuration["Auth0:Domain"];
 var audience = builder.Configuration["Auth0:Audience"];
@@ -41,9 +42,17 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSingleton<IProductRepository, ProductRepositoryFake>();  // Singleton ensures that the state of the fake data persists across multiple requests
+}
+else 
+{
+    builder.Services.AddScoped<IProductRepository, ProductRepository>();
+}
 
+// Configure DBContext with the DB connection string
 builder.Services.AddDbContext<ProductContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -51,6 +60,7 @@ builder.Services.AddDbContext<ProductContext>(options =>
     {
         throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
     }
+    // Retry pattern for resilience
     options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
         sqlOptions.EnableRetryOnFailure(
             maxRetryCount: 3,
