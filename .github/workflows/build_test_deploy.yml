@@ -106,9 +106,6 @@ jobs:
               with:
                 name: Migration-Script
                 path: ./
-                
-            - name: Change Directory
-              run: cd Migration-Script
               
               # Apply the migration script using Azure SQL Action
             - name: Apply Migration Script to Production
