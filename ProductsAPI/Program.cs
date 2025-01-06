@@ -99,17 +99,17 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     if (app.Environment.IsDevelopment())
     {
-        // var context = services.GetRequiredService<ProductContext>();
-        // context.Database.Migrate();
-        // try
-        // {
-        //     ProductInitialiser.Initialise(context);
-        // }
-        // catch (Exception e)
-        // {
-        //     var logger = services.GetRequiredService<ILogger<Program>>();
-        //     logger.LogDebug("Inserting test data failed.");
-        // }
+        var context = services.GetRequiredService<ProductContext>();
+        context.Database.Migrate();
+        try
+        {
+            ProductInitialiser.Initialise(context);
+        }
+        catch (Exception e)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogDebug("Inserting test data failed.");
+        }
     }
 }
 
