@@ -43,34 +43,23 @@ builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
-// Configure DbContext using the connection string, with Retry pattern
+
 builder.Services.AddDbContext<ProductContext>(options =>
 {
-    if (builder.Environment.IsDevelopment())
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrEmpty(connectionString))
     {
-        var folder = Environment.SpecialFolder.LocalApplicationData;
-        var path = Environment.GetFolderPath(folder);
-        var dbPath = System.IO.Path.Join(path, "products.db");
-        options.UseSqlite($"Data source={dbPath}");
-        options.EnableDetailedErrors();
-        options.EnableSensitiveDataLogging();
+        throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
     }
-    else
-    {
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            throw new InvalidOperationException("The connection string 'DefaultConnection' is not configured.");
-        }
-        options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 3,
-                maxRetryDelay: TimeSpan.FromSeconds(6),
-                errorNumbersToAdd: null
-            )
-        );
-    }
+    options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(6),
+            errorNumbersToAdd: null
+        )
+    );
 });
+
 
 
 var app = builder.Build();
@@ -93,24 +82,5 @@ app.MapGet("/", context =>
     return Task.CompletedTask;
 });
 
-// This creates a new scope to perform data seeding 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    if (app.Environment.IsDevelopment())
-    {
-        var context = services.GetRequiredService<ProductContext>();
-        context.Database.Migrate();
-        try
-        {
-            ProductInitialiser.Initialise(context);
-        }
-        catch (Exception e)
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogDebug("Inserting test data failed.");
-        }
-    }
-}
 
 app.Run();
