@@ -105,14 +105,18 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                 name: Migration-Script
-                path: ./migrations.sql
+                path: ./
+                
+            - name: Change Directory
+              run: cd Migration-Script
               
               # Apply the migration script using Azure SQL Action
             - name: Apply Migration Script to Production
               uses: azure/sql-action@v2
               with:
                 connection-string: ${{ secrets.DATABASE_CONNECTION_STRING }}
-                path: ./migrations.sql
+                path: './migrations.sql'
+                action: 'RunSql'
     
             - name: Deploy to Production
               uses: azure/webapps-deploy@v3
