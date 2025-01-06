@@ -21,6 +21,10 @@ jobs:
 
           - name: Install Entity Framework Core CLI
             run: dotnet tool install --global dotnet-ef
+
+          - name: Add .NET tools to PATH
+            # On GitHub-hosted runners, you must add the global tools directory to PATH.
+            run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
     
           - name: Build with dotnet
             run: dotnet build ${{ env.PROJECT_PATH }}/ProductsAPI.csproj --configuration Release
