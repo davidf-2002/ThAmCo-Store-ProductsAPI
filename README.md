@@ -2,6 +2,9 @@
 
 Welcome to ProductsAPI! This API provides detailed access to product information within our company. It supports viewing operations for both registered and unregistered users, and create, update, delete operations for users with staff roles via OAuth security.
 
+## Live project
+https://thamco-productsapi-drf5guh7dfa8ceb7.uksouth-01.azurewebsites.net/products
+
 ## Features
 - **Secure Access**: Enhanced security with OAuth for staff operations.
 - **DevOps Practices**: Automated build, test, deployment, and database migrations through Azure.
