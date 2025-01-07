@@ -9,7 +9,7 @@ Welcome to ProductsAPI! This API provides detailed access to product information
 - **Anti-XSRF**: Tools in place to prevent cross-site request forgery attacks.
 
 ## Requirements
-- .NET Core 3.1 or later
+- .NET Core 8.0 or later
 - Azure subscription for deployment
 - Postman for API testing
 
