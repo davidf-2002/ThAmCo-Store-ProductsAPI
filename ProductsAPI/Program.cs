@@ -14,7 +14,6 @@ builder.Services.AddControllers();
 builder.Services.AddLogging();
 
 
-
 // Validate JWT tokens issued by Auth server
 var domain = builder.Configuration["Auth0:Domain"];
 var audience = builder.Configuration["Auth0:Audience"];
